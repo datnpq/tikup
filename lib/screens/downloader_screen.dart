@@ -4,6 +4,7 @@ import 'package:tikup/services/api_service.dart';
 import 'package:tikup/services/download_service.dart';
 import 'package:tikup/widgets/video_player_widget.dart';
 import 'package:tikup/widgets/download_button.dart';
+import 'package:flutter/services.dart';
 
 class DownloaderScreen extends StatefulWidget {
   const DownloaderScreen({super.key});
@@ -13,31 +14,78 @@ class DownloaderScreen extends StatefulWidget {
 }
 
 class _DownloaderScreenState extends State<DownloaderScreen> {
-  final _urlController = TextEditingController();
-  bool isLoading = false;
+  final TextEditingController _linkController = TextEditingController();
+  bool _isLoading = false;
+  bool _showDownloadOptions = false;
+  String? _thumbnailUrl;
+  String? _videoTitle;
   bool isDownloading = false;
   double downloadProgress = 0;
   VideoModel? videoInfo;
 
   @override
   void dispose() {
-    _urlController.dispose();
+    _linkController.dispose();
     super.dispose();
   }
 
-  Future<void> _fetchVideo() async {
-    if (_urlController.text.isEmpty) {
+  Future<void> _pasteFromClipboard() async {
+    try {
+      final ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
+      if (data != null && data.text != null) {
+        final String clipboardText = data.text!.trim();
+        
+        // Kiểm tra nếu là link TikTok hợp lệ
+        if (clipboardText.contains('tiktok.com/') || 
+            clipboardText.contains('douyin.com/') ||
+            clipboardText.contains('vm.tiktok.com/')) {
+          
+          setState(() {
+            _linkController.text = clipboardText;
+            _showDownloadOptions = false; // Reset download options khi paste link mới
+          });
+          
+          // Tự động tìm kiếm sau khi paste
+          await _findVideo();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Invalid TikTok link'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('No link in clipboard'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error accessing clipboard: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _findVideo() async {
+    if (_linkController.text.isEmpty) {
       _showError('Please enter a TikTok URL');
       return;
     }
 
     setState(() {
-      isLoading = true;
+      _isLoading = true;
       videoInfo = null;
     });
 
     try {
-      final info = await ApiService.getVideoInfo(_urlController.text);
+      final info = await ApiService.getVideoInfo(_linkController.text);
       setState(() {
         videoInfo = info;
       });
@@ -45,7 +93,7 @@ class _DownloaderScreenState extends State<DownloaderScreen> {
       _showError(e.toString());
     } finally {
       setState(() {
-        isLoading = false;
+        _isLoading = false;
       });
     }
   }
@@ -124,27 +172,61 @@ class _DownloaderScreenState extends State<DownloaderScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _urlController,
-              decoration: InputDecoration(
-                hintText: 'Paste TikTok video URL here',
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.paste),
-                  onPressed: () async {
-                    // TODO: Implement paste from clipboard
-                  },
-                ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[900],
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _linkController,
+                      style: TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'Paste TikTok link here...',
+                        hintStyle: TextStyle(color: Colors.grey),
+                        prefixIcon: Icon(Icons.search, color: Colors.grey),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                      ),
+                      onChanged: (value) => setState(() {}),
+                    ),
+                  ),
+                  if (_linkController.text.isNotEmpty)
+                    IconButton(
+                      icon: Icon(Icons.clear, color: Colors.grey),
+                      onPressed: () {
+                        _linkController.clear();
+                        setState(() {
+                          _showDownloadOptions = false;
+                        });
+                      },
+                    ),
+                  Container(
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.horizontal(right: Radius.circular(25)),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.content_paste, color: Colors.black),
+                      onPressed: _isLoading ? null : _pasteFromClipboard,
+                      tooltip: 'Paste from clipboard',
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(height: 16),
             ElevatedButton(
-              onPressed: isLoading ? null : _fetchVideo,
+              onPressed: _isLoading ? null : _findVideo,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('Find'),
                   SizedBox(width: 8),
-                  isLoading
+                  _isLoading
                       ? SizedBox(
                           width: 20,
                           height: 20,
@@ -160,15 +242,15 @@ class _DownloaderScreenState extends State<DownloaderScreen> {
               SizedBox(height: 24),
               VideoPlayerWidget(url: videoInfo!.videoUrl),
               SizedBox(height: 16),
-              Text(
-                videoInfo!.description,
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-              SizedBox(height: 8),
-              Text(
-                'By ${videoInfo!.authorName} • ${videoInfo!.likeCount} likes',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+              // Text(
+              //   videoInfo!.description,
+              //   style: Theme.of(context).textTheme.bodyLarge,
+              // ),
+              // SizedBox(height: 8),
+              // Text(
+              //   'By ${videoInfo!.authorName} • ${videoInfo!.likeCount} likes',
+              //   style: Theme.of(context).textTheme.bodyMedium,
+              // ),
               SizedBox(height: 24),
               Row(
                 children: [
@@ -178,7 +260,7 @@ class _DownloaderScreenState extends State<DownloaderScreen> {
                       isDownloading: isDownloading,
                       progress: downloadProgress,
                       icon: Icons.video_library,
-                      label: 'Save Video',
+                      label: 'Video',
                     ),
                   ),
                   SizedBox(width: 16),
@@ -188,7 +270,7 @@ class _DownloaderScreenState extends State<DownloaderScreen> {
                       isDownloading: isDownloading,
                       progress: downloadProgress,
                       icon: Icons.music_note,
-                      label: 'Save Audio',
+                      label: 'Audio',
                     ),
                   ),
                 ],
