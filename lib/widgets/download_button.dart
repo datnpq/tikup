@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 class DownloadButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isDownloading;
-  final double progress;
   final IconData icon;
   final String label;
 
@@ -11,7 +10,6 @@ class DownloadButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.isDownloading,
-    required this.progress,
     required this.icon,
     required this.label,
   });
@@ -19,18 +17,23 @@ class DownloadButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
-      onPressed: isDownloading ? null : onPressed,
+      onPressed: onPressed,
       icon: isDownloading
           ? SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(
-                value: progress,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.black),
+                strokeWidth: 2.0,
               ),
             )
           : Icon(icon),
       label: Text(isDownloading ? 'Downloading...' : label),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isDownloading ? Colors.grey[400] : Theme.of(context).primaryColor,
+        disabledBackgroundColor: Colors.grey[400],
+        disabledForegroundColor: Colors.white70,
+      ),
     );
   }
 } 

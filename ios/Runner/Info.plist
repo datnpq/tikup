@@ -25,9 +25,28 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-8666772096445767~4571912231</string>
+	<string>ca-app-pub-3940256099942544~1458002511</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSNotificationUsageDescription</key>
+	<string>TikUP would like to send you notifications when your downloads are complete.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>TikUp needs access to your photo library to save downloaded videos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>TikUp needs access to your photo library to save downloaded videos.</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>Ứng dụng cần quyền để lưu tệp âm thanh</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>Ứng dụng cần quyền để lưu tệp đã tải</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This allows TikUP to provide you with a better user experience and personalized content.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>
@@ -35,19 +54,9 @@
 			<string>cstr6suwn9.skadnetwork</string>
 		</dict>
 	</array>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>This allows TikUP to provide you with a better user experience and personalized content.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>TikUP needs access to save videos to your Photos.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>TikUP needs access to save videos to your Photos.</string>
-	<key>NSNotificationUsageDescription</key>
-	<string>TikUP would like to send you notifications when your downloads are complete.</string>
-	<key>UIFileSharingEnabled</key>
-	<true/>
-	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
@@ -66,5 +75,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
+	<key>CADisableMinimumOSVersionChecks</key>
+	<true/>
 </dict>
 </plist>
